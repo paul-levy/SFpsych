@@ -9,16 +9,17 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 
 % Constants.
 debug_t = 0;
-feedback = 1;
+feedback = 0;
 
 % Design of experiment - (blank?:)stim1:blank:stim2
-NUM_TRIALS = 15;
+NUM_TRIALS = 150;
 inter_1 = 0.2; % how many seconds for stimulus 1?
 inter_2 = 0.2; % stimulus 2?
 inter_blank = 0.1; % intervening blank?
 
 SF_REF = 4; % in cpd
-stim_oct = 0.5; % +- centers will be spaced +/-X octave(s) apart
+stim_oct = 1.25; % +- centers will be spaced within +/-X octave(s)
+num_steps = 9;
 
 TEST_CONS = [0.05 0.1 0.33 1];
 REF_CON = 1;
@@ -48,7 +49,7 @@ else
 end
 
 % stim. location and size
-stim_radius = 0.5; % radius, in degrees
+stim_radius = 1; % radius, in degrees
 stim_loc = [sqrt(2), -sqrt(2)];
 fp_radius = 0.02; % in degrees
 col_fix = [1 1 1]; % for fixation point
@@ -57,7 +58,6 @@ slack = 2; % make the grating X times the size of the stencil/aperture...
 
 % center spatial frequencies
 sf_round = 2; % just round to X digits...
-num_steps = 11;
 lower_cent = 2^(log2(SF_REF) - stim_oct);
 higher_cent = 2^(log2(SF_REF) + stim_oct);
 freqSeries = myRound(logspace(log10(lower_cent), log10(higher_cent), num_steps), sf_round);
@@ -100,6 +100,7 @@ texml = mglCreateTexture(ml);
 mglBltTexture(texml,[0 0]); mglFlush;
 
 % determine order:
+rng('shuffle');
 which_ref = randi(2, NUM_TRIALS, 1);
 test_ind = randi(length(freqSeries), NUM_TRIALS, 1);
 test_disp = testDisps(randi(length(testDisps), NUM_TRIALS, 1));
