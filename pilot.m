@@ -12,7 +12,7 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 4;
+run_num = 7;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
@@ -178,6 +178,8 @@ mglFlush;
 mglWaitSecs(5);
 mglPlaySound('submarine');
 
+n_corr = 0;
+
 for tr_i = 1:NUM_TRIALS
 
   mglBltTexture(texml,[0 0]); mglFlush;
@@ -291,9 +293,23 @@ for tr_i = 1:NUM_TRIALS
       freqSeries(sf2), con2, disp2, find(respKeys==1), which_ref(tr_i));
   fprintf('tr %d: response: %g ...sf1 %g and sf2 %g...right? %d\n', tr_i, find(respKeys == 1), sf1, sf2, ~neg);
   
+  if ~neg
+    n_corr = n_corr + 1;
+  end
+  
 end
 %%%
 % End main loop.
 %%%
+
+% give the user feedback
+mglStencilSelect(0); % no stencil...
+mglTextSet('Helvectica', 40, [0 0 0]);
+perCorr = mglText(sprintf('%.2f%% correct', 100*n_corr/NUM_TRIALS));
+mglBltTexture(texml,[0 0]);
+mglBltTexture(perCorr, [0 0], 'center', 'center');
+mglFlush;
+
+mglWaitSecs(10);
 
 mglClose;
