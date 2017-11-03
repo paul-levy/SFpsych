@@ -7,55 +7,116 @@
 myRound = @(x, digit) round((x.*10^digit))./10^digit;
 scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 
-% Constants.
-debug_t = 0;
-feedback = 0;
+%% Experiment parameters
+% saving the file
+subj = 1;
+save_loc = 'data/'; meta_loc = 'data/metaData/';
+is_pilot = 1;
+run_num = 4;
+save_meta = 1; % save metadata?
 
-% Design of experiment - (blank?:)stim1:blank:stim2
 NUM_TRIALS = 150;
+REF_CON = 1;
+REF_DISP = 1; % for now, just do 1 or 5...
+
+stimDist = 6; % i.e. 6 degrees in periphy
+xsgn = 1; ysgn = -1; % i.e. pos or neg [x/y]
+
+debug_t = 0; % print how long each frame takes?
+feedback = 0; % give feedback to the subject?
+
+com_str = 'Pilot in VNL psychophysics room (1139) in dark conditions';
+% comments for meta data file (e.g. room, condition, etc)
+
+%% Design of experiment - (blank?:)stim1:blank:stim2
 inter_1 = 0.2; % how many seconds for stimulus 1?
 inter_2 = 0.2; % stimulus 2?
-inter_blank = 0.1; % intervening blank?
+inter_blank = 1; % intervening blank?
 
-SF_REF = 4; % in cpd
-stim_oct = 1.25; % +- centers will be spaced within +/-X octave(s)
+% stimulus information
+SF_REF = 3;
+stim_oct = 1.25; % what separation (in octaves) +- for end points of center sf rel. to SF_REF?
 num_steps = 9;
+tf = 5;
 
 TEST_CONS = [0.05 0.1 0.33 1];
-REF_CON = 1;
 
-REF_DISP = 1; % for now, just do 1 or 5...
 if REF_DISP == 1
     testDisps = 1; % [1 5];
 else
     testDisps = 5;
 end
 
-% For saving results
-subj = 1; % which subject number...
-save_loc = 'data/';
-is_pilot = 1;
-run_num = 1;
-if is_pilot
-    save_base = sprintf('sfPer_s%g_p%g.txt', subj, run_num);
+% stim. location and size
+stim_radius = 2; % radius, in degrees
+stim_loc = [xsgn*sqrt((stimDist^2)/2), ysgn*sqrt((stimDist^2)/2)];
+fp_radius = 0.1; % in degrees
+col_fix = [1 1 1]; % for fixation point
+slack = 2; % make the grating X times the size of the stencil/aperture...
+
+%% display set up
+mon = 2; % in VNL psych room, 0 is "work" monitor, 2 is actual monitor
+
+% Open, init MGL.
+if mon == 2
+    xPix = 1280; yPix = 960;
+    mglOpen(mon, xPix, yPix, 100, 32); %100Hz, bit depth = 32
+    scrXcm = 40; scrYcm = 30; % in cm
+    scrDist = 114; % in cm
+    mglVisualAngleCoordinates(scrDist, [scrXcm scrYcm]);
 else
-    save_base = sprintf('sfPer_s%g_%g.txt', subj, run_num);
+    xPix = 800; yPix = 800;
+    mglOpen(mon, xPix, yPix, 60, 32); % 800x800, 60Hz, bit depth = 32
+    scrXcm = 16; scrYcm = 10; % in cm
+    scrDist = 57; % in cm
+    mglVisualAngleCoordinates(scrDist,[scrXcm scrYcm]); % viewing from 57 cm, display is 5cm x 5cm
 end
 
-if isfile(save_base) % if it exists, append the time so we don't overwrite
+
+%% For saving results
+if is_pilot
+    save_base = sprintf('sfPer_s%g_p%g.txt', subj, run_num);
+    if save_meta
+        sm_base = sprintf('META_sfPer_s%g_p%g.txt', subj, run_num);
+    end
+else
+    save_base = sprintf('sfPer_s%g_%g.txt', subj, run_num);
+    if save_meta
+        sm_base = sprintf('META_sfPer_s%g_p%g.txt', subj, run_num);
+    end
+end
+
+if isfile([save_loc, save_base]) % if it exists, append the time so we don't overwrite
     exp_info = fopen([save_loc, save_base, datestr(now)], 'w+');
 else
     exp_info = fopen([save_loc, save_base], 'w+');
 end
 
-% stim. location and size
-stim_radius = 1; % radius, in degrees
-stim_loc = [sqrt(2), -sqrt(2)];
-fp_radius = 0.02; % in degrees
-col_fix = [1 1 1]; % for fixation point
-tf = 5; % set tf = cps
-slack = 2; % make the grating X times the size of the stencil/aperture...
+if save_meta
+    if isfile([meta_loc, sm_base])
+        meta_inf = fopen([meta_loc, sm_base, datestr(now)], 'w+');
+    else
+        meta_inf = fopen([meta_loc, sm_base, datestr(now)], 'w+');
+    end
+    
+    fprintf(meta_inf, 'number of trials: %g\nstimulus eccentricity in degrees: %.3f\n', NUM_TRIALS, stimDist);
+    fprintf(meta_inf, 'length of interval 1 in s: %.4f\n', inter_1);
+    fprintf(meta_inf, 'length of blank interval in s: %.4f\n', inter_blank);
+    fprintf(meta_inf, 'length of interval 2 in s: %.4f\n', inter_2);
+    fprintf(meta_inf, 'stimulus location x: %.4f\n', stim_loc(1));
+    fprintf(meta_inf, 'stimulus location y: %.4f\n', stim_loc(2));
+    fprintf(meta_inf, 'stimulus radius degrees: %.3f\n', stim_radius);
+    fprintf(meta_inf, 'fixation point radius in degrees: %.3f\n', fp_radius);
+    fprintf(meta_inf, 'screen resolution (x, y) in pixels: %g, %g\n', xPix, yPix);
+    fprintf(meta_inf, 'screen size (x, y) in cm: %g, %g\n', scrXcm, scrYcm);
+    fprintf(meta_inf, 'viewing distance in cm: %g\n', scrDist);
+    fprintf(meta_inf, 'subject feedback? %g\n', feedback);
+    fprintf(meta_inf, 'start time: %s\n', datestr(now));
+    fprintf(meta_inf, 'comments: %s\n', com_str);
+    fclose(meta_inf);
+end
 
+%% stimulus creation/calculation
 % center spatial frequencies
 sf_round = 2; % just round to X digits...
 lower_cent = 2^(log2(SF_REF) - stim_oct);
@@ -78,16 +139,6 @@ if REF_DISP == 1 % if it's first family, we make it just 1 grating...
     conVec = round(conVec);
 end
 
-mon = 2; % in VNL psych room, 0 is "work" monitor, 2 is actual monitor
-
-% Open, init MGL.
-if mon == 2
-    mglOpen(mon, 800, 800, 60, 32); %60Hz, bit depth = 32
-else
-    mglOpen(mon, 800, 800, 60, 32); % 800x800, 60Hz, bit depth = 32
-end
-mglVisualAngleCoordinates(57,[5 5]); % viewing from 57 cm, display will be in 5 x 5 cm box
-
 % Stencils
 mglStencilCreateBegin(1);
 mglFillOval(stim_loc(1), stim_loc(2), [stim_radius stim_radius]);
@@ -95,7 +146,7 @@ mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], [1 1 1]); % fixation po
 mglStencilCreateEnd;
 
 % Create mean-lum texture and clear screen.
-ml = 255*0.5*ones(800,800);
+ml = 255*0.5*ones(yPix,xPix);
 texml = mglCreateTexture(ml);
 mglBltTexture(texml,[0 0]); mglFlush;
 
@@ -167,12 +218,10 @@ for tr_i = 1:NUM_TRIALS
     curr_x = mod(stim_loc(1) + elapsed_time_s*tf/freqSeries(sf1), slack*stim_loc(1));
     mglBltTexture(tex1, [curr_x stim_loc(2)]);
     mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix);
-%     mglPolygon([-2.5 -2.5 -2.0 -2.0], [2.0 2.5 2.5 2.0], [1 1 1]);
     mglFlush;
     if debug_t, toc; end;
 
   end
-%   mglDeleteTexture(tex1);
   
   % blank interval
   interBlank = clock;
@@ -209,9 +258,11 @@ for tr_i = 1:NUM_TRIALS
   end
 %   mglDeleteTexture(tex2);
   
-  mglBltTexture(texml,[0 0]); mglFlush;
-  mglBltTexture(texml,[0 0]); mglFlush;
-  mglPolygon(0.5*[-1 -1 1 1], 0.5*[-1 1 1 -1], col_fix);
+  mglBltTexture(texml,[0 0]); mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix); 
+    mglFlush;
+  mglBltTexture(texml,[0 0]); mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix); 
+    mglFlush;
+  mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix);
 
   respKeys = 0 * mglGetKeys();
   KEYS_RESPONSE = [39 41]; % 'j' and 'k'
@@ -236,8 +287,8 @@ for tr_i = 1:NUM_TRIALS
       mglWaitSecs(0.500); % wait a bit so we actually get the sound...
   end
   
-  fprintf(exp_info, '%g %g %d %g %g %d %d\n', freqSeries(sf1), con1, disp1, ...
-      freqSeries(sf2), con2, disp2, find(respKeys==1));
+  fprintf(exp_info, '%g %g %d %g %g %d %d %g\n', freqSeries(sf1), con1, disp1, ...
+      freqSeries(sf2), con2, disp2, find(respKeys==1), which_ref(tr_i));
   fprintf('tr %d: response: %g ...sf1 %g and sf2 %g...right? %d\n', tr_i, find(respKeys == 1), sf1, sf2, ~neg);
   
 end
