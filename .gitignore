@@ -1,2 +1,6 @@
 # ignore Luke's original code
 orig_hallum.m
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+data/.DS_Store
