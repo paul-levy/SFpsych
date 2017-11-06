@@ -12,7 +12,7 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 7;
+run_num = 11;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
@@ -75,28 +75,28 @@ end
 
 %% For saving results
 if is_pilot
-    save_base = sprintf('sfPer_s%g_p%g.txt', subj, run_num);
+    save_base = sprintf('sfPer_s%g_p%g', subj, run_num);
     if save_meta
-        sm_base = sprintf('META_sfPer_s%g_p%g.txt', subj, run_num);
+        sm_base = sprintf('META_sfPer_s%g_p%g', subj, run_num);
     end
 else
-    save_base = sprintf('sfPer_s%g_%g.txt', subj, run_num);
+    save_base = sprintf('sfPer_s%g_%g', subj, run_num);
     if save_meta
-        sm_base = sprintf('META_sfPer_s%g_p%g.txt', subj, run_num);
+        sm_base = sprintf('META_sfPer_s%g_p%g', subj, run_num);
     end
 end
 
 if isfile([save_loc, save_base]) % if it exists, append the time so we don't overwrite
-    exp_info = fopen([save_loc, save_base, datestr(now)], 'w+');
+    exp_info = fopen([save_loc, save_base, datestr(now), '.txt'], 'w+');
 else
-    exp_info = fopen([save_loc, save_base], 'w+');
+    exp_info = fopen([save_loc, save_base, '.txt'], 'w+');
 end
 
 if save_meta
     if isfile([meta_loc, sm_base])
-        meta_inf = fopen([meta_loc, sm_base, datestr(now)], 'w+');
+        meta_inf = fopen([meta_loc, sm_base, datestr(now), '.txt'], 'w+');
     else
-        meta_inf = fopen([meta_loc, sm_base, datestr(now)], 'w+');
+        meta_inf = fopen([meta_loc, sm_base, '.txt'], 'w+');
     end
     
     fprintf(meta_inf, 'number of trials: %g\nstimulus eccentricity in degrees: %.3f\n', NUM_TRIALS, stimDist);
