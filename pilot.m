@@ -12,7 +12,7 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 11;
+run_num = 17;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
@@ -177,6 +177,7 @@ mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix);
 mglFlush;
 mglWaitSecs(5);
 mglPlaySound('submarine');
+mglWaitSecs(2);
 
 n_corr = 0;
 

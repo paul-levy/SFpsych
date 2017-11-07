@@ -7,3 +7,9 @@ sfPer_s1_p8.txt
 sfPer_s1_p9.txt
 sfPer_s1_p10.txt
 sfPer_s1_p11.txt
+sfPer_s1_p12.txt
+sfPer_s1_p13.txt
+sfPer_s1_p14.txt
+sfPer_s1_p15.txt
+sfPer_s1_p16.txt
+sfPer_s1_p17.txt
