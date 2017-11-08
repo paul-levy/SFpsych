@@ -75,14 +75,14 @@ end
 
 %% For saving results
 if is_pilot
-    save_base = sprintf('sfPer_s%g_p%g', subj, run_num);
+    save_base = sprintf('sfPer_s%02d_p%03d', subj, run_num);
     if save_meta
-        sm_base = sprintf('META_sfPer_s%g_p%g', subj, run_num);
+        sm_base = sprintf('META_sfPer_s%02d_p%03d', subj, run_num);
     end
 else
-    save_base = sprintf('sfPer_s%g_%g', subj, run_num);
+    save_base = sprintf('sfPer_s%02d_%03d', subj, run_num);
     if save_meta
-        sm_base = sprintf('META_sfPer_s%g_p%g', subj, run_num);
+        sm_base = sprintf('META_sfPer_s%02d_p%03d', subj, run_num);
     end
 end
 
