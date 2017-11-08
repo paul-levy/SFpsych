@@ -12,7 +12,7 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 17;
+run_num = 22;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
@@ -86,14 +86,14 @@ else
     end
 end
 
-if isfile([save_loc, save_base]) % if it exists, append the time so we don't overwrite
+if isfile([save_loc, save_base, '.txt']) % if it exists, append the time so we don't overwrite
     exp_info = fopen([save_loc, save_base, datestr(now), '.txt'], 'w+');
 else
     exp_info = fopen([save_loc, save_base, '.txt'], 'w+');
 end
 
 if save_meta
-    if isfile([meta_loc, sm_base])
+    if isfile([meta_loc, sm_base, '.txt'])
         meta_inf = fopen([meta_loc, sm_base, datestr(now), '.txt'], 'w+');
     else
         meta_inf = fopen([meta_loc, sm_base, '.txt'], 'w+');

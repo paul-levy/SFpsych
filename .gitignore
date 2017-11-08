@@ -4,3 +4,4 @@ orig_hallum.m
 .ipynb_checkpoints/
 __pycache__/
 data/.DS_Store
+*~
