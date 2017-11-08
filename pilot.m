@@ -122,6 +122,13 @@ sf_round = 2; % just round to X digits...
 lower_cent = 2^(log2(SF_REF) - stim_oct);
 higher_cent = 2^(log2(SF_REF) + stim_oct);
 freqSeries = myRound(logspace(log10(lower_cent), log10(higher_cent), num_steps), sf_round);
+% if you want one more point flanking either side ...
+% of the reference (log space between adjacent and mid)
+logMid = @(a, b) 2^((log2(a) + log2(b))/2);
+ref_ind = find(freqSeries == SF_REF); % always the same...
+lowMid = logMid(freqSeries(ref_ind-1), freqSeries(ref_ind));
+highMid = logMid(freqSeries(ref_ind), freqSeries(ref_ind+1));
+freqSeries = sort([freqSeries, lowMid, lowMid, lowMid, highMid, highMid, highMid]);
 
 % dispersion?
 num_families = 5;
