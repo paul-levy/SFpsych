@@ -12,7 +12,7 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 22;
+run_num = 500;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
@@ -25,13 +25,14 @@ xsgn = 1; ysgn = -1; % i.e. pos or neg [x/y]
 debug_t = 0; % print how long each frame takes?
 feedback = 0; % give feedback to the subject?
 
-com_str = 'Pilot in VNL psychophysics room (1139) in dark conditions';
+com_str = 'Pilot in VNL psychophysics room (1139) in dark conditions. Two test points "shouldering" the SF reference value were included and made to appear 2 times as often as other points. Reference SF also appears twice as often.';
 % comments for meta data file (e.g. room, condition, etc)
 
 %% Design of experiment - (blank?:)stim1:blank:stim2
 inter_1 = 0.2; % how many seconds for stimulus 1?
 inter_2 = 0.2; % stimulus 2?
 inter_blank = 1; % intervening blank?
+min_iti = 1; % the minimum inter-trial-interval is 1 second; wait after response if needed
 
 % stimulus information
 SF_REF = 3;
@@ -48,7 +49,7 @@ else
 end
 
 % stim. location and size
-stim_radius = 2; % radius, in degrees
+stim_radius = 1; % radius, in degrees
 stim_loc = [xsgn*sqrt((stimDist^2)/2), ysgn*sqrt((stimDist^2)/2)];
 fp_radius = 0.1; % in degrees
 col_fix = [1 1 1]; % for fixation point
@@ -125,10 +126,10 @@ freqSeries = myRound(logspace(log10(lower_cent), log10(higher_cent), num_steps),
 % if you want one more point flanking either side ...
 % of the reference (log space between adjacent and mid)
 logMid = @(a, b) 2^((log2(a) + log2(b))/2);
-ref_ind = find(freqSeries == SF_REF); % always the same...
+ref_ind = find(freqSeries == SF_REF, 1, 'first'); % always the same; take only 1 if the value is found > 1 time
 lowMid = logMid(freqSeries(ref_ind-1), freqSeries(ref_ind));
 highMid = logMid(freqSeries(ref_ind), freqSeries(ref_ind+1));
-freqSeries = sort([freqSeries, lowMid, lowMid, lowMid, highMid, highMid, highMid]);
+freqSeries = sort([freqSeries, freqSeries(ref_ind), lowMid, lowMid, highMid, highMid]);
 
 % dispersion?
 num_families = 5;
@@ -148,7 +149,7 @@ end
 
 % Stencils
 mglStencilCreateBegin(1);
-mglFillOval(stim_loc(1), stim_loc(2), [stim_radius stim_radius]);
+mglFillOval(stim_loc(1), stim_loc(2), [2*stim_radius 2*stim_radius]);
 mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], [1 1 1]); % fixation point
 mglStencilCreateEnd;
 
@@ -163,14 +164,15 @@ which_ref = randi(2, NUM_TRIALS, 1);
 test_ind = randi(length(freqSeries), NUM_TRIALS, 1);
 test_disp = testDisps(randi(length(testDisps), NUM_TRIALS, 1));
 test_con = TEST_CONS(randi(length(TEST_CONS), NUM_TRIALS, 1));
-ref_ind = find(freqSeries == SF_REF); % always the same...
+ref_ind = find(freqSeries == SF_REF, 1, 'first'); % always the same; take only one index
 
 if REF_DISP == 1 % Create single sinusoids
     % just fix
     ori = 90; ph = 0;
     for sf_c = 1 : length(freqSeries)
-        grat{sf_c} = mglMakeGrating(slack*stim_radius, slack*stim_radius, freqSeries(sf_c), ori, ph);
-        % tex{sf_c} = mglCreateTexture(scaleGrat(grat{sf_c}, TOTAL_CON);
+        % slack*2*stim_radius because the stencil (i.e. stimulus area) is
+        % 2*stim_radius wide/tall (diameter = 2*radius, ya!)
+        grat{sf_c} = mglMakeGrating(slack*2*stim_radius, slack*2*stim_radius, freqSeries(sf_c), ori, ph);
     end
 end
 % create only the reference texture; others will be computed as needed
@@ -224,9 +226,8 @@ for tr_i = 1:NUM_TRIALS
 
     if debug_t, tic; end; % for timing...
     elpsed = clock;
-%     curr_x = stim_loc(1);
-    curr_x = mod(stim_loc(1) + elapsed_time_s*tf/freqSeries(sf1), slack*stim_loc(1));
-    mglBltTexture(tex1, [curr_x stim_loc(2)]);
+    curr_x = (stim_loc(1)+stim_radius) + mod(elapsed_time_s*tf/freqSeries(sf_ind), (slack-1)*2*stim_radius);
+    mglBltTexture(tex1, [curr_x stim_loc(2)], 1, 0); % right-align the texture
     mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix);
     mglFlush;
     if debug_t, toc; end;
@@ -266,7 +267,8 @@ for tr_i = 1:NUM_TRIALS
     if debug_t, toc; end;
 
   end
-%   mglDeleteTexture(tex2);
+  
+  begin_iti = clock; % see min_iti parameter above
   
   mglBltTexture(texml,[0 0]); mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix); 
     mglFlush;
@@ -277,18 +279,19 @@ for tr_i = 1:NUM_TRIALS
   respKeys = 0 * mglGetKeys();
   KEYS_RESPONSE = [39 41]; % 'j' and 'k'
   % wait until you get the right input from the subject...
+  TEST_CONS = logspace(log2(0.01), log2(0.64), 7);
   while (sum(respKeys([KEYS_RESPONSE])) < 1), respKeys = mglGetKeys(); end
 
   IX_FEEDBACK_POS = 2;
   IX_FEEDBACK_NEG = 1;
   neg = 1;
-  if (sf1 == sf2) && randi(2) > 1.5 % if it's a "tie", play the sounds 50% of the time
+  if (freqSeries(sf1) == freqSeries(sf2)) && randi(2) > 1.5 % if it's a "tie", play the sounds 50% of the time
       neg = 0;
   end
-  if (respKeys(KEYS_RESPONSE(1)) == 1) && (sf1 > sf2)
+  if (respKeys(KEYS_RESPONSE(1)) == 1) && (freqSeries(sf1) > freqSeries(sf2))
       neg = 0;
   end
-  if (respKeys(KEYS_RESPONSE(2)) == 1) && (sf2 > sf1)
+  if (respKeys(KEYS_RESPONSE(2)) == 1) && (freqSeries(sf2) > freqSeries(sf1))
       neg = 0;
   end
   
@@ -303,6 +306,11 @@ for tr_i = 1:NUM_TRIALS
   
   if ~neg
     n_corr = n_corr + 1;
+  end
+  
+  % before going on, make sure it's been at least "min_iti" seconds long
+  while (etime(clock,begin_iti) < min_iti)
+      continue;
   end
   
 end

@@ -11,5 +11,5 @@ screen resolution (x, y) in pixels: 1280, 960
 screen size (x, y) in cm: 40, 30
 viewing distance in cm: 114
 subject feedback? 0
-start time: 08-Nov-2017 17:11:42
+start time: 09-Nov-2017 13:00:35
 comments: Pilot in VNL psychophysics room (1139) in dark conditions. Two test points "shouldering" the SF reference value were included and made to appear 3 times as often as other points.
