@@ -3,6 +3,8 @@
 % Initial code from LH
 %%%%%%%%%%
 
+clear;
+
 % useful functions...
 myRound = @(x, digit) round((x.*10^digit))./10^digit;
 scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
@@ -12,12 +14,13 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 500;
+run_num = 30;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
 REF_CON = 1;
-REF_DISP = 1; % for now, just do 1 or 5...
+REF_DISP = 5;
+incMidSamp = 0; % sample more near the reference?
 
 stimDist = 6; % i.e. 6 degrees in periphy
 xsgn = 1; ysgn = -1; % i.e. pos or neg [x/y]
@@ -25,9 +28,8 @@ xsgn = 1; ysgn = -1; % i.e. pos or neg [x/y]
 debug_t = 0; % print how long each frame takes?
 feedback = 0; % give feedback to the subject?
 
-com_str = 'Pilot in VNL psychophysics room (1139) in dark conditions. Two test points "shouldering" the SF reference value were included and made to appear 2 times as often as other points. Reference SF also appears twice as often.';
+com_str = 'Pilot in VNL psychophysics room (1139) in dark conditions.';
 % comments for meta data file (e.g. room, condition, etc)
-
 %% Design of experiment - (blank?:)stim1:blank:stim2
 inter_1 = 0.2; % how many seconds for stimulus 1?
 inter_2 = 0.2; % stimulus 2?
@@ -39,14 +41,17 @@ SF_REF = 3;
 stim_oct = 1.25; % what separation (in octaves) +- for end points of center sf rel. to SF_REF?
 num_steps = 9;
 tf = 5;
+tf_spread = tf/5; % draw TF of dispersed gratings from gaussian with this sigma
 
 TEST_CONS = [0.05 0.1 0.33 1];
 
 if REF_DISP == 1
     testDisps = 1; % [1 5];
 else
-    testDisps = 5;
+    testDisps = REF_DISP;
 end
+
+ori_all = 90; % vertical grating (drift in horizontal)
 
 % stim. location and size
 stim_radius = 1; % radius, in degrees
@@ -54,7 +59,6 @@ stim_loc = [xsgn*sqrt((stimDist^2)/2), ysgn*sqrt((stimDist^2)/2)];
 fp_radius = 0.1; % in degrees
 col_fix = [1 1 1]; % for fixation point
 slack = 2; % make the grating X times the size of the stencil/aperture...
-
 %% display set up
 mon = 2; % in VNL psych room, 0 is "work" monitor, 2 is actual monitor
 
@@ -72,8 +76,6 @@ else
     scrDist = 57; % in cm
     mglVisualAngleCoordinates(scrDist,[scrXcm scrYcm]); % viewing from 57 cm, display is 5cm x 5cm
 end
-
-
 %% For saving results
 if is_pilot
     save_base = sprintf('sfPer_s%02d_p%03d', subj, run_num);
@@ -116,7 +118,6 @@ if save_meta
     fprintf(meta_inf, 'comments: %s\n', com_str);
     fclose(meta_inf);
 end
-
 %% stimulus creation/calculation
 % center spatial frequencies
 sf_round = 2; % just round to X digits...
@@ -125,12 +126,14 @@ higher_cent = 2^(log2(SF_REF) + stim_oct);
 freqSeries = myRound(logspace(log10(lower_cent), log10(higher_cent), num_steps), sf_round);
 % if you want one more point flanking either side ...
 % of the reference (log space between adjacent and mid)
-logMid = @(a, b) 2^((log2(a) + log2(b))/2);
-ref_ind = find(freqSeries == SF_REF, 1, 'first'); % always the same; take only 1 if the value is found > 1 time
-lowMid = logMid(freqSeries(ref_ind-1), freqSeries(ref_ind));
-highMid = logMid(freqSeries(ref_ind), freqSeries(ref_ind+1));
-freqSeries = sort([freqSeries, freqSeries(ref_ind), lowMid, lowMid, highMid, highMid]);
-
+if incMidSamp
+    logMid = @(a, b) 2^((log2(a) + log2(b))/2);
+    ref_ind = find(freqSeries == SF_REF, 1, 'first'); % always the same; take only 1 if the value is found > 1 time
+    lowMid = logMid(freqSeries(ref_ind-1), freqSeries(ref_ind));
+    highMid = logMid(freqSeries(ref_ind), freqSeries(ref_ind+1));
+    freqSeries = sort([freqSeries, freqSeries(ref_ind), lowMid, lowMid, highMid, highMid]);
+end
+    
 % dispersion?
 num_families = 5;
 surr_oct = 1.5; % +- 1 octave relative to sfRef
@@ -142,10 +145,10 @@ sfVec = 2.^(octSeries(:) + log2(SF_REF));
 spreadVec = logspace(log10(.125), log10(1.25), num_families);
 profTemp   = normpdf(octSeries, 0, spreadVec(REF_DISP));
 profile    = profTemp/sum(profTemp);
-conVec = profile.*REF_CON;
 if REF_DISP == 1 % if it's first family, we make it just 1 grating...
-    conVec = round(conVec);
+    profile = round(profile);
 end
+conVec = profile .* REF_CON;
 
 % Stencils
 mglStencilCreateBegin(1);
@@ -168,18 +171,19 @@ ref_ind = find(freqSeries == SF_REF, 1, 'first'); % always the same; take only o
 
 if REF_DISP == 1 % Create single sinusoids
     % just fix
-    ori = 90; ph = 0;
+    ori = ori_all;
     for sf_c = 1 : length(freqSeries)
+        ph = 360*rand(); % phase in degrees
         % slack*2*stim_radius because the stencil (i.e. stimulus area) is
         % 2*stim_radius wide/tall (diameter = 2*radius, ya!)
         grat{sf_c} = mglMakeGrating(slack*2*stim_radius, slack*2*stim_radius, freqSeries(sf_c), ori, ph);
     end
-end
-% create only the reference texture; others will be computed as needed
-tex_ref = mglCreateTexture(scaleGrat(grat{ref_ind}, REF_CON));
+    % create only the reference texture; others will be computed as needed
+    tex_ref = mglCreateTexture(scaleGrat(grat{ref_ind}, REF_CON));
+end 
 
 %%%
-% Main loop is here.
+%% Main loop is here.
 %%%
 mglBltTexture(texml,[0 0]);
 mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix);
@@ -198,24 +202,52 @@ for tr_i = 1:NUM_TRIALS
 
   if which_ref(tr_i) == 1
       sf1 = ref_ind;
-      tex1 = tex_ref;
       con1 = REF_CON;
       disp1 = REF_DISP;
-
+      if disp1 == 1
+          tex1 = tex_ref;
+      else % need to create random phases, tf; calculate con profile
+          ph_grat1 = 360*rand(num_gratings, 1);
+          tf_grat1 = random('norm', tf, tf_spread, [num_gratings, 1]);
+          profTemp   = normpdf(octSeries, 0, spreadVec(disp1));
+          profile1    = profTemp/sum(profTemp);
+      end
+          
       sf2 = test_ind(tr_i);
       con2 = test_con(tr_i);
-      tex2 = mglCreateTexture(scaleGrat(grat{sf2}, con2));
       disp2 = test_disp(tr_i);
+      if disp2 == 1
+          tex2 = mglCreateTexture(scaleGrat(grat{sf2}, con2));
+      else % need to create random phases, tf; calculate con profile
+          ph_grat2 = 360*rand(num_gratings, 1);
+          tf_grat2 = random('norm', tf, tf_spread, [num_gratings, 1]);
+          profTemp   = normpdf(octSeries, 0, spreadVec(disp1));
+          profile2    = profTemp/sum(profTemp);
+      end
   else
       sf1 = test_ind(tr_i);
       con1 = test_con(tr_i);
-      tex1 = mglCreateTexture(scaleGrat(grat{sf1}, con1));
       disp1 = test_disp(tr_i);
+      if disp1 == 1
+          tex1 = mglCreateTexture(scaleGrat(grat{sf1}, con1));
+      else % need to create random phases, tf; calculate con profile
+          ph_grat1 = 360*rand(num_gratings, 1);
+          tf_grat1 = random('norm', tf, tf_spread, [num_gratings, 1]);
+          profTemp   = normpdf(octSeries, 0, spreadVec(disp1));
+          profile1    = profTemp/sum(profTemp);
+      end
       
       sf2 = ref_ind;
-      tex2 = tex_ref;
       con2 = REF_CON;
       disp2 = REF_DISP;
+      if disp2 == 1
+        tex2 = tex_ref;
+      else % need to create random phases, tf; calculate con profile
+          ph_grat2 = 360*rand(num_gratings, 1);
+          tf_grat2 = random('norm', tf, tf_spread, [num_gratings, 1]);
+          profTemp   = normpdf(octSeries, 0, spreadVec(disp1));
+          profile2    = profTemp/sum(profTemp);
+      end
   end
   
   % first stim interval
@@ -226,12 +258,35 @@ for tr_i = 1:NUM_TRIALS
 
     if debug_t, tic; end; % for timing...
     elpsed = clock;
-    curr_x = (stim_loc(1)+stim_radius) + mod(elapsed_time_s*tf/freqSeries(sf_ind), (slack-1)*2*stim_radius);
-    mglBltTexture(tex1, [curr_x stim_loc(2)], 1, 0); % right-align the texture
+    if disp1 > 1 % i.e. dispersed grating
+        % need to calculate
+        ori = ori_all;
+        sfVec = 2.^(octSeries(:) + log2(freqSeries(sf1)));
+        conVec = profile1 .* con1;
+        for grat = 1 : num_gratings            
+            curr_grat{grat} = scaleGrat(mglMakeGrating(2*stim_radius, ...
+                2*stim_radius, sfVec(grat), ori, ...
+                mod(ph_grat1(grat) - 360*elapsed_time_s*tf_grat1(grat), 360)), conVec(grat));
+            if grat == 1
+                curr_stim = curr_grat{grat} - 255*0.5; % subtract off mean luminance
+            else
+                curr_stim = curr_stim + (curr_grat{grat} - 255*0.5);
+            end
+        end
+        curr_stim = curr_stim + 255*0.5;
+        
+        tex1 = mglCreateTexture(curr_stim);
+        mglBltTexture(tex1, [stim_loc(1) stim_loc(2)], 0, 0); % center
+    else
+        curr_x = (stim_loc(1)+stim_radius) + mod(elapsed_time_s*tf/freqSeries(sf1), (slack-1)*2*stim_radius);
+        mglBltTexture(tex1, [curr_x stim_loc(2)], 1, 0); % right-align the texture
+    end
+    
     mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix);
     mglFlush;
+    
     if debug_t, toc; end;
-
+    
   end
   
   % blank interval
@@ -259,11 +314,32 @@ for tr_i = 1:NUM_TRIALS
 
     if debug_t, tic; end; % for timing...
     elpsed = clock;
-    curr_x = stim_loc(1);
-    curr_x = mod(stim_loc(1) + elapsed_time_s*tf/freqSeries(sf2), slack*stim_loc(1));
-    mglBltTexture(tex2,[curr_x stim_loc(2)]);
+    if disp2 > 1 % i.e. dispersed grating
+        % need to calculate
+        ori = ori_all;
+        sfVec = 2.^(octSeries(:) + log2(freqSeries(sf2)));
+        conVec = profile2 .* con2;
+        for grat = 1 : num_gratings            
+            curr_grat{grat} = scaleGrat(mglMakeGrating(2*stim_radius, ...
+                2*stim_radius, sfVec(grat), ori, ...
+                mod(ph_grat2(grat) - 360*elapsed_time_s*tf_grat2(grat), 360)), conVec(grat));
+            if grat == 1
+                curr_stim = curr_grat{grat} - 255*0.5; % subtract off mean luminance
+            else
+                curr_stim = curr_stim + (curr_grat{grat} - 255*0.5);
+            end
+        end
+        curr_stim = curr_stim + 255*0.5;
+        
+        tex1 = mglCreateTexture(curr_stim);
+        mglBltTexture(tex1, [stim_loc(1) stim_loc(2)], 0, 0); % center
+    else
+        curr_x = (stim_loc(1)+stim_radius) + mod(elapsed_time_s*tf/freqSeries(sf2), (slack-1)*2*stim_radius);
+        mglBltTexture(tex2, [curr_x stim_loc(2)], 1, 0); % right-align the texture
+    end
     mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], col_fix);
     mglFlush;
+        
     if debug_t, toc; end;
 
   end
