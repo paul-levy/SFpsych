@@ -13,3 +13,14 @@ sfPer_s01_p014.txt
 sfPer_s01_p015.txt
 sfPer_s01_p016.txt
 sfPer_s01_p017.txt
+sfPer_s01_p018.txt
+sfPer_s01_p019.txt
+sfPer_s01_p020.txt
+sfPer_s01_p021.txt
+sfPer_s01_p022.txt
+sfPer_s01_p023.txt
+sfPer_s01_p024.txt
+sfPer_s01_p025.txt
+sfPer_s01_p026.txt
+sfPer_s01_p027.txt
+sfPer_s01_p028.txt
