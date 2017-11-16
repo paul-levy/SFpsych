@@ -14,12 +14,12 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 30;
+run_num = 40;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
 REF_CON = 1;
-REF_DISP = 5;
+REF_DISP = 3;
 incMidSamp = 0; % sample more near the reference?
 
 stimDist = 6; % i.e. 6 degrees in periphy
@@ -221,7 +221,7 @@ for tr_i = 1:NUM_TRIALS
       else % need to create random phases, tf; calculate con profile
           ph_grat2 = 360*rand(num_gratings, 1);
           tf_grat2 = random('norm', tf, tf_spread, [num_gratings, 1]);
-          profTemp   = normpdf(octSeries, 0, spreadVec(disp1));
+          profTemp   = normpdf(octSeries, 0, spreadVec(disp2));
           profile2    = profTemp/sum(profTemp);
       end
   else
@@ -245,7 +245,7 @@ for tr_i = 1:NUM_TRIALS
       else % need to create random phases, tf; calculate con profile
           ph_grat2 = 360*rand(num_gratings, 1);
           tf_grat2 = random('norm', tf, tf_spread, [num_gratings, 1]);
-          profTemp   = normpdf(octSeries, 0, spreadVec(disp1));
+          profTemp   = normpdf(octSeries, 0, spreadVec(disp2));
           profile2    = profTemp/sum(profTemp);
       end
   end
@@ -331,8 +331,8 @@ for tr_i = 1:NUM_TRIALS
         end
         curr_stim = curr_stim + 255*0.5;
         
-        tex1 = mglCreateTexture(curr_stim);
-        mglBltTexture(tex1, [stim_loc(1) stim_loc(2)], 0, 0); % center
+        tex2 = mglCreateTexture(curr_stim);
+        mglBltTexture(tex2, [stim_loc(1) stim_loc(2)], 0, 0); % center
     else
         curr_x = (stim_loc(1)+stim_radius) + mod(elapsed_time_s*tf/freqSeries(sf2), (slack-1)*2*stim_radius);
         mglBltTexture(tex2, [curr_x stim_loc(2)], 1, 0); % right-align the texture
