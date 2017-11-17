@@ -1,2 +1,7 @@
 sfPer_s01_p029.txt
 sfPer_s01_p030.txt
+sfPer_s01_p031.txt
+sfPer_s01_p032.txt
+sfPer_s01_p033.txt
+sfPer_s01_p034.txt
+sfPer_s01_p035.txt

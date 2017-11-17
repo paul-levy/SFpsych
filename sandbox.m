@@ -17,7 +17,7 @@ init_sf = 3;
 stim_oct = 2;
 num_steps = 9;
 
-REF_DISP = 3;
+REF_DISP = 5;
 
 % center spatial frequencies
 sf_round = 2; % just round to X digits...

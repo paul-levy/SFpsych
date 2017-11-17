@@ -1,0 +1,15 @@
+number of trials: 150
+stimulus eccentricity in degrees: 4.000
+length of stimulus presentation in s: 0.3200
+stimulus location x1: -2.8284
+stimulus location y1: -2.8284
+stimulus location x2: 2.8284
+stimulus location y2: -2.8284
+stimulus radius degrees: 1.000
+fixation point radius in degrees: 0.100
+screen resolution (x, y) in pixels: 1280, 960
+screen size (x, y) in cm: 40, 30
+viewing distance in cm: 114
+subject feedback? 0
+start time: 16-Nov-2017 18:59:57
+comments: Pilot in VNL psychophysics room (1139) in dark conditions. Georgeson style (one interval).
