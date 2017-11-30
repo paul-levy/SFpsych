@@ -1,0 +1,19 @@
+number of trials: 100
+stimulus eccentricity in degrees: 4.000
+length of blank pre-interval in s: 0.4000
+length of blank post-interval in s: 0.4000
+length of stimulus interval in s: 0.1500
+stimulus location x1: -3.4641
+stimulus location y1: -2.0000
+stimulus location x2: 0.0000
+stimulus location y2: 4.0000
+stimulus location x3: 3.4641
+stimulus location y3: -2.0000
+stimulus radius degrees: 1.000
+fixation cross radius in pixels: 4.000
+screen resolution (x, y) in pixels: 1280, 960
+screen size (x, y) in cm: 40, 30
+viewing distance in cm: 114
+subject feedback? 1
+start time: 30-Nov-2017 16:27:53
+comments: 1139, dark room
