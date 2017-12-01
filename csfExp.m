@@ -11,7 +11,7 @@ sf_round = 2; % just round to X digits...
 
 %% experimental set up
 num_trials = 100; % per CSF call
-subj_id = 's0l'; % as in, subject01
+subj_id = 's01'; % as in, subject01
 data_dir = 'data/CSF/';
 view_dist_m = 1.14; % 114 cm
 

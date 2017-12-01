@@ -82,7 +82,7 @@ DISK = double(rr < 0.5) .* (0.5 + 0.5*cos(2*pi*1/0.2*(max(0.4, rr) - 0.4)));
 saveDir = dataLoc;
 metaDir = [saveDir, 'metaData/'];
 
-filename = sprintf('csf_oddball_%s_sf%s', subjectID, sprintf('%04.0f', round(1e2*sfGrating_cpd)));
+filename = sprintf('csf_oddball_s%02d_sf%s', subjectID, sprintf('%04.0f', round(1e2*sfGrating_cpd)));
 if isfile([saveDir, filename, '.txt'])
     filename = [filename, datestr(now)];
 end
