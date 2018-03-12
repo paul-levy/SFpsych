@@ -7,20 +7,22 @@ clear;
 
 % useful functions...
 myRound = @(x, digit) round((x.*10^digit))./10^digit;
+sf_round = 3; % round SF values to the thousandth
 scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 
 %% Experiment parameters
 % saving the file
-subj = 1;
+subj = 99;
 save_loc = 'data/'; 
 meta_loc = 'data/metaData/';
 is_pilot = 1;
 run_num = 400;
-save_meta = 1; % save metadata?
+save_meta = 0; % save metadata?
 
 NUM_TRIALS = 150;
-REF_CON = 1;
-REF_DISP = 1; % 1-4 are our options, as of now (03.09.18)
+REF_CON = 1; % do not change from 1 - 03.12.18
+REF_DISP = 4; % 1-4 are our options, as of now (03.09.18)
+SF_REF = 1.73; % in cpd - center of spatial frequency vector
 incMidSamp = 1; % sample more near (i.e. -1/0/+1 rel. to) the reference?
 
 stimDist = 6; % i.e. 6 degrees in periphy
@@ -38,7 +40,6 @@ inter_blank = 1; % intervening blank?
 min_iti = 1; % the minimum inter-trial-interval is 1 second; wait after response if needed
 
 % stimulus information
-SF_REF = 1.73; 
 grat_step = 0.5059; % spacing between adjacent SFs in mixture stimuli in octaves; 0.5059 octaves is spacing in logspace(log10(0.3), log10(10), 11)
 cent_step = 0.25; % i.e. space the center of each distribution X octaves apart
 n_cent_steps = 11; % must be odd s.t. we can symmetrically go about SF_REF
@@ -48,8 +49,6 @@ end
 
 tf = 5;
 tf_spread = tf/5; % draw TF of dispersed gratings from gaussian with this sigma
-
-total_cons = [1 0.688 0.473 0.325]; % as used in sfMixAlt physiology experiments
 
 if REF_DISP == 1
     testDisps = 1; % [1 5];
@@ -126,30 +125,33 @@ if save_meta
 end
 %% stimulus creation/calculation
 % center spatial frequencies
-defaultSfs = logspace(log10(0.3), log10(10), 11);
-sfMult = defaultSfs ./ median(defaultSfs);
-freqCenters = SF_REF * sfMult;
+freqMax = 2^(log2(SF_REF) + floor(n_cent_steps/2)*cent_step);
+freqMin = 2^(log2(SF_REF) - floor(n_cent_steps/2)*cent_step);
+freqCenters = logspace(log10(freqMin), log10(freqMax), n_cent_steps);
 
 % if you want one more point flanking either side ...
 % of the reference (log space between adjacent and mid)
 if incMidSamp
     logMid = @(a, b) 2^((log2(a) + log2(b))/2);
-    ref_ind = find(freqCenters == SF_REF, 1, 'first'); % always the same; take only 1 if the value is found > 1 time
+    ref_ind = find(myRound(freqCenters, sf_round) == myRound(SF_REF, sf_round), 1, 'first'); % always the same; take only 1 if the value is found > 1 time
     lowMid = logMid(freqCenters(ref_ind-1), freqCenters(ref_ind));
     highMid = logMid(freqCenters(ref_ind), freqCenters(ref_ind+1));
     freqCenters = sort([freqCenters, freqCenters(ref_ind), lowMid, lowMid, highMid, highMid]);
 end
+freqCenters = myRound(freqCenters, sf_round);
     
 % dispersion?
-num_families = 5;
-surr_oct = 1.5; % +- X octave(s) relative to sfRef
-num_gratings = 11; % how many samples around (and including) sfRef
-octSeries  = linspace(surr_oct, -surr_oct, num_gratings);
-sfVec = 2.^(octSeries(:) + log2(SF_REF));
+num_gratings = 7; % fixed from sfMixAlt physiology experiments
+freqMax = 2^(log2(1) + floor(num_gratings/2)*grat_step); % For expl. on log2(1), see comment below sfVec
+freqMin = 2^(log2(1) - floor(num_gratings/2)*grat_step);
+sfVec = logspace(log10(freqMin), log10(freqMax), num_gratings);
+ % relative to a particular sfCenter, sfVec contains the factors which can
+ % be used to multiply the sfCenter to create the dispersed grating
 
 % contrast
-logSpCons = logspace(log10(0.05), log10(1), 9); % 9 possible contrasts
-valCons = [4 4 3 2]; % first N of total_cons can be used for corresponding dispersion (inc. disp L to R)
+logSpCons = logspace(log10(0.05), log10(1), 9); % 9 possible contrasts - from sfMixAlt physiology
+logSpConsRev = fliplr(logSpCons);
+valCons = [9 4 3 2]; % first N of total_cons can be used for corresponding dispersion (inc. disp L to R)
 conStart = [0 1 3 3]; % N steps from end of logSpCons list
 % indexing into the logSpCons list is simply replication of what is used in
 % sfMixAlt (as of 03.09.18 - PL)
@@ -168,6 +170,9 @@ for dispInd = 1:length(valCons)
         end
     end
 end
+
+warning('Contrast randomization only works under the assumption of one dispersion throughout the experiment');
+TEST_CONS = 1:valCons(testDisps); % i.e. how many valid contrasts?indices into conProfile cell above
 
 % Stencils
 mglStencilCreateBegin(1);
@@ -190,6 +195,7 @@ ref_ind = find(freqCenters == SF_REF, 1, 'first'); % always the same; take only 
 
 if REF_DISP == 1 % Create single sinusoids
     % just fix
+    clear grat;
     ori = ori_all;
     for sf_c = 1 : length(freqCenters)
         ph = 360*rand(); % phase in degrees
@@ -225,35 +231,32 @@ for tr_i = 1:NUM_TRIALS
       disp1 = REF_DISP;
       if disp1 == 1
           tex1 = tex_ref;
-      else % need to create random phases, tf; calculate con profile
+      else % need to create random phases, tf; grab con profile
           ph_grat1 = 360*rand(num_gratings, 1);
           tf_grat1 = random('norm', tf, tf_spread, [num_gratings, 1]);
-          profTemp   = normpdf(octSeries, 0, spreadVec(disp1));
-          profile1    = profTemp/sum(profTemp);
+          profile1 = conProfile{disp1, con1};
       end
           
       sf2 = test_ind(tr_i);
       con2 = test_con(tr_i);
       disp2 = test_disp(tr_i);
       if disp2 == 1
-          tex2 = mglCreateTexture(scaleGrat(grat{sf2}, con2));
+          tex2 = mglCreateTexture(scaleGrat(grat{sf2}, logSpConsRev(con2)));
       else % need to create random phases, tf; calculate con profile
           ph_grat2 = 360*rand(num_gratings, 1);
           tf_grat2 = random('norm', tf, tf_spread, [num_gratings, 1]);
-          profTemp   = normpdf(octSeries, 0, spreadVec(disp2));
-          profile2    = profTemp/sum(profTemp);
+          profile2 = conProfile{disp2, con2};
       end
   else
       sf1 = test_ind(tr_i);
       con1 = test_con(tr_i);
       disp1 = test_disp(tr_i);
       if disp1 == 1
-          tex1 = mglCreateTexture(scaleGrat(grat{sf1}, con1));
+          tex1 = mglCreateTexture(scaleGrat(grat{sf1}, logSpConsRev(con1)));
       else % need to create random phases, tf; calculate con profile
           ph_grat1 = 360*rand(num_gratings, 1);
           tf_grat1 = random('norm', tf, tf_spread, [num_gratings, 1]);
-          profTemp   = normpdf(octSeries, 0, spreadVec(disp1));
-          profile1    = profTemp/sum(profTemp);
+          profile1 = conProfile{disp1, con1};
       end
       
       sf2 = ref_ind;
@@ -264,8 +267,7 @@ for tr_i = 1:NUM_TRIALS
       else % need to create random phases, tf; calculate con profile
           ph_grat2 = 360*rand(num_gratings, 1);
           tf_grat2 = random('norm', tf, tf_spread, [num_gratings, 1]);
-          profTemp   = normpdf(octSeries, 0, spreadVec(disp2));
-          profile2    = profTemp/sum(profTemp);
+          profile2 = conProfile{disp2, con2};
       end
   end
   
@@ -280,11 +282,11 @@ for tr_i = 1:NUM_TRIALS
     if disp1 > 1 % i.e. dispersed grating
         % need to calculate
         ori = ori_all;
-        sfVec = 2.^(octSeries(:) + log2(freqCenters(sf1)));
-        conVec = profile1 .* con1;
+        sfVecCurr = sfVec * freqCenters(sf1);
+        conVec = profile1; % total contrast levels built in
         for grat = 1 : num_gratings            
             curr_grat{grat} = scaleGrat(mglMakeGrating(2*stim_radius, ...
-                2*stim_radius, sfVec(grat), ori, ...
+                2*stim_radius, sfVecCurr(grat), ori, ...
                 mod(ph_grat1(grat) - 360*elapsed_time_s*tf_grat1(grat), 360)), conVec(grat));
             if grat == 1
                 curr_stim = curr_grat{grat} - 255*0.5; % subtract off mean luminance
@@ -336,11 +338,11 @@ for tr_i = 1:NUM_TRIALS
     if disp2 > 1 % i.e. dispersed grating
         % need to calculate
         ori = ori_all;
-        sfVec = 2.^(octSeries(:) + log2(freqCenters(sf2)));
-        conVec = profile2 .* con2;
+        sfVecCurr = sfVec * freqCenters(sf2);
+        conVec = profile2; % total contrast built in
         for grat = 1 : num_gratings            
             curr_grat{grat} = scaleGrat(mglMakeGrating(2*stim_radius, ...
-                2*stim_radius, sfVec(grat), ori, ...
+                2*stim_radius, sfVecCurr(grat), ori, ...
                 mod(ph_grat2(grat) - 360*elapsed_time_s*tf_grat2(grat), 360)), conVec(grat));
             if grat == 1
                 curr_stim = curr_grat{grat} - 255*0.5; % subtract off mean luminance
