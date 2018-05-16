@@ -1,6 +1,8 @@
 import numpy as np
 import scipy.optimize as opt
 from scipy.stats import norm, binom, weibull_min
+import statsmodels.api as sm
+from scipy.special import logit
 
 import pdb
 
@@ -13,8 +15,35 @@ def find_pse(true_pmf, params):
     # 0.5 is PSE; i.e., we believe the test and reference SF are equivalent
     pse_obj = lambda x: np.square(0.5 - true_pmf(params, x));
     pse_opt = opt.minimize(pse_obj, 0.5);
-    return pse_opt['x'];
+    return pse_opt['x'], pse_opt;
 
+def fit_pmf_logit(obs, sfs):
+    '''
+    obs: binary vector of responses (test SF higher [1] or lower [0] than reference SF?)
+
+    sfs: spatial frequency of the test grating; corresponds to obs
+    '''
+    regressors = sm.add_constant(sfs);    
+    glm_binom = sm.GLM(obs, regressors, family=sm.families.Binomial(sm.families.links.logit));
+    return glm_binom.fit();
+
+def get_logit_results(glm_fit, eval_sfs = np.logspace(np.log10(1), np.log10(10), 31), pse = 0.5):
+    '''
+    Pass in a glm.fit() structure
+    
+    This will return the PSE, standard error of the estimate, a curve (given eval_sfs), etc...
+    '''
+    glm_params = glm_fit.params;
+    stand_errors = glm_fit.bse;
+    
+    pse = (logit(pse)-glm_params[0])/glm_params[1];
+    se_pse = abs(stand_errors[0]/glm_params[1]);
+    
+    predict_this = sm.add_constant(eval_sfs)
+    curve = glm_fit.predict(predict_this);
+    
+    return pse, se_pse, curve;
+    
 def pmf_loss(eval_at, n_testResp, n_trials, pmf_model, pmf_means, pmf_slope, lapse_low, lapse_high):
 
     # n_testResp and n_trials are nCons x nSF, so we loop over all contrasts separately (each gets its own mean param)

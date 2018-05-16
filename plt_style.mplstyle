@@ -40,7 +40,7 @@ axes.spines.bottom   : True
 axes.spines.top      : False
 axes.spines.right    : False
 axes.titlesize       : large   # fontsize of the axes title
-axes.labelsize       : largr  # fontsize of the x any y labels
+axes.labelsize       : large  # fontsize of the x any y labels
 
 
 ### FIGURE
