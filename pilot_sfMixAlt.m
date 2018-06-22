@@ -174,13 +174,13 @@ end
 warning('Contrast randomization only works under the assumption of one dispersion throughout the experiment');
 TEST_CONS = 1:valCons(testDisps); % i.e. how many valid contrasts?indices into conProfile cell above
 
-% Stencils
+%% Stencils
 mglStencilCreateBegin(1);
 mglFillOval(stim_loc(1), stim_loc(2), [2*stim_radius 2*stim_radius]);
 mglPolygon(fp_radius*[-1 -1 1 1], fp_radius*[-1 1 1 -1], [1 1 1]); % fixation point
 mglStencilCreateEnd;
 
-% Create mean-lum texture and clear screen.
+%% Create mean-lum texture and clear screen.
 ml = 255*0.5*ones(yPix,xPix);
 texml = mglCreateTexture(ml);
 mglBltTexture(texml,[0 0]); mglFlush;

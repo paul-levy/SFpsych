@@ -4,21 +4,20 @@
 %%%%%%%%%%
 
 clear;
-
 % useful functions...
 myRound = @(x, digit) round((x.*10^digit))./10^digit;
 scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 
 %% Experiment parameters
 % saving the file
-subj = 1;
+subj = 2;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 50;
+run_num = 28;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
-REF_DISP = 3;
+REF_DISP = 1;
 incMidSamp = 1; % sample more near the reference?
 
 stimDist = 4; % i.e. 6 degrees in periphy
@@ -35,10 +34,10 @@ stim_dur = 0.32; % how many seconds for stimulus?
 min_iti = 1; % the minimum inter-trial-interval is 1 second; wait after response if needed
 
 % stimulus information
-SF_REF = 3;
-stim_oct = 1.25; % what separation (in octaves) +- for end points of center sf rel. to SF_REF?
-num_steps = 9;
-tf = 5;
+SF_REF = 1.5;
+stim_oct = 0.9375; % what separation (in octaves) +- for end points of center sf rel. to SF_REF?
+num_steps = 7;
+tf = 3;
 tf_spread = tf/5; % draw TF of dispersed gratings from gaussian with this sigma
 
 if REF_DISP <= 3

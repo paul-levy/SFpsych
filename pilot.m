@@ -11,18 +11,17 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 
 %% Experiment parameters
 % saving the file
-subj = 1;
+subj = 2;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 400;
+run_num = 27;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
-REF_CON = 1;
-REF_DISP = 3;
+REF_DISP = 1;
 incMidSamp = 1; % sample more near the reference?
 
-stimDist = 6; % i.e. 6 degrees in periphy
+stimDist = 4; % i.e. 6 degrees in periphery
 xsgn = 1; ysgn = -1; % i.e. pos or neg [x/y]
 
 debug_t = 0; % print how long each frame takes?
@@ -37,13 +36,16 @@ inter_blank = 1; % intervening blank?
 min_iti = 1; % the minimum inter-trial-interval is 1 second; wait after response if needed
 
 % stimulus information
-SF_REF = 3;
-stim_oct = 1.25; % what separation (in octaves) +- for end points of center sf rel. to SF_REF?
-num_steps = 9;
-tf = 5;
+SF_REF = 1.5;
+stim_oct = 0.9375; % what separation (in octaves) +- for end points of center sf rel. to SF_REF?
+num_steps = 7;
+tf = 3;
 tf_spread = tf/5; % draw TF of dispersed gratings from gaussian with this sigma
 
-TEST_CONS = [0.05 0.1 0.33 1];
+TEST_CONS = [0.04 0.08 0.16 0.32];
+% TEST_CONS = [0.05 0.1 0.33 1];
+
+REF_CON = TEST_CONS(end);
 
 if REF_DISP == 1
     testDisps = 1; % [1 5];
