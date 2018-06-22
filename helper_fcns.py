@@ -67,8 +67,8 @@ def pmf_loss(eval_at, n_testResp, n_trials, pmf_model, pmf_means, pmf_slope, lap
             pmf_args = [pmf_means, pmf_slope, lapse_low, lapse_high];
         else: # it's an array - grab the right one
             pmf_args = [pmf_means[c], pmf_slope[c], lapse_low[c], lapse_high[c]];
-        # Fit to log2(spatial_frequency)
-        pmf_vals = pmf_args[3] + (1-pmf_args[2]-pmf_args[3])*pmf_model(np.log2(eval_at), *pmf_args[0:2]);
+        #pmf_vals = pmf_args[3] + (1-pmf_args[2]-pmf_args[3])*pmf_model(np.log2(eval_at), *pmf_args[0:2]); # fit to log2(SF)
+        pmf_vals = pmf_args[3] + (1-pmf_args[2]-pmf_args[3])*pmf_model(eval_at, *pmf_args[0:2]);
         loss_eval = binom.pmf(n_testResp[c], n_trials[c], pmf_vals);
         loss_by_con[c] = sum(-np.log(np.maximum(1e-6, loss_eval))); # ensure no value is zero...can't take log of zero, yadig?
     
@@ -91,7 +91,7 @@ def opt_pmf(eval_at, n_testResp, n_trials, pmf_model, nFits):
     methodStr = 'L-BFGS-B';
     z = [eval_at[0], eval_at[-1]]; # ugly python
     sfConstr = [tuple(x) for x in np.broadcast_to(z, (nCon, 2))]
-    slopeConstr = [tuple(x) for x in np.broadcast_to([0.25, 6], (nCon, 2))];
+    slopeConstr = [tuple(x) for x in np.broadcast_to([0.25, 20], (nCon, 2))];
     lapseConstr = [tuple(x) for x in np.broadcast_to([0, 0.1], (nCon, 2))];
     # lapseConstr = (0, 0.2)
     
