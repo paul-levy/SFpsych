@@ -15,15 +15,14 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 
 %% Experiment parameters
 % saving the file
-subj = 2;
+subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 28;
+run_num = 67;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
 REF_DISP = 1;
-incMidSamp = 1; % sample more near the reference?
 
 stimDist = 4; % i.e. 6 degrees in periphy
 xsgn = [-1 1]; ysgn = [-1, -1]; % i.e. pos or neg [x/y]
@@ -32,7 +31,7 @@ xsgn = [-1 1]; ysgn = [-1, -1]; % i.e. pos or neg [x/y]
 debug_t = 0; % print how long each frame takes?
 feedback = 0; % give feedback to the subject?
 
-com_str = 'Pilot in VNL psychophysics room (1139) in dark conditions. Georgeson style (one interval).';
+com_str = 'Pilot in VNL psychophysics room (1139) in dark conditions. Georgeson style (one interval). SF spacing based on Weber fraction.';
 % comments for meta data file (e.g. room, condition, etc)
 %% Design of experiment - (blank?:)stim1:blank:stim2
 stim_dur = 0.32; % how many seconds for stimulus?
@@ -40,7 +39,8 @@ min_iti = 1; % the minimum inter-trial-interval is 1 second; wait after response
 
 % stimulus information
 % sf
-SF_REF = 1.5;
+SF_REF = 6;
+% SF_REF = 1.5;
 weber_frac = 0.05; % 5 percent change
 num_steps = 5; % N steps above, N steps below
 incRef = 0; % include refStimulus in the list of test SF?
@@ -172,7 +172,7 @@ mglBltTexture(texml,[0 0]); mglFlush;
 % determine order:
 rng('shuffle');
 which_ref = randi(2, NUM_TRIALS, 1);
-test_ind = randi(length(freqSeries), NUM_TRIALS, 1);
+test_ind = randi(length(SFtestInds), NUM_TRIALS, 1);
 test_disp = testDisps(randi(length(testDisps), NUM_TRIALS, 1));
 test_con = TEST_CONS(randi(length(TEST_CONS), NUM_TRIALS, 1));
 
