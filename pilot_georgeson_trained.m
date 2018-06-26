@@ -18,11 +18,11 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 67;
+run_num = 74;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
-REF_DISP = 1;
+REF_DISP = 3;
 
 stimDist = 4; % i.e. 6 degrees in periphy
 xsgn = [-1 1]; ysgn = [-1, -1]; % i.e. pos or neg [x/y]
@@ -39,21 +39,23 @@ min_iti = 1; % the minimum inter-trial-interval is 1 second; wait after response
 
 % stimulus information
 % sf
-SF_REF = 6;
+SF_REF = 3;
 % SF_REF = 1.5;
 weber_frac = 0.05; % 5 percent change
-num_steps = 5; % N steps above, N steps below
+% num_steps = 5; % N steps above, N steps below
+num_steps = 6; % N steps above, N steps below
 incRef = 0; % include refStimulus in the list of test SF?
 % tf 
 tf = 3;
 tf_spread = tf/5; % draw TF of dispersed gratings from gaussian with this sigma
 
-if REF_DISP <= 3
+if REF_DISP <= 2
     testDisps = REF_DISP; % [1 5];
     TEST_CONS = [0.04 0.08 0.16 0.32];
 else
     testDisps = REF_DISP;
-    TEST_CONS = [0.16 0.32 0.64 0.96];
+    TEST_CONS = [0.32];
+%     TEST_CONS = [0.16 0.32 0.64 0.96];
 end
 
 REF_CON = TEST_CONS(end);
