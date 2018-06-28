@@ -18,7 +18,7 @@ scaleGrat = @(sf, con) (255/2)*(1+sf.*con);
 subj = 1;
 save_loc = 'data/'; meta_loc = 'data/metaData/';
 is_pilot = 1;
-run_num = 84;
+run_num = 92;
 save_meta = 1; % save metadata?
 
 NUM_TRIALS = 150;
@@ -45,18 +45,23 @@ num_steps = 5; % N steps above, N steps below
 incRef = 0; % include refStimulus in the list of test SF?
 % tf 
 tf = 3;
-tf_spread = tf/5; % draw TF of dispersed gratings from gaussian with this sigma
+tf_spread = tf/5; % draw    of dispersed gratings from gaussian with this sigma
 
-if REF_DISP <= 2
-    weber_frac = 0.05; % 5 percent change
-    testDisps = REF_DISP; % [1 5];
-    TEST_CONS = [0.04 0.08 0.16 0.32];
-else
-    weber_frac = 0.075; % 5 percent change
-    testDisps = REF_DISP;
-    TEST_CONS = [0.16 0.32 0.64];
-%     TEST_CONS = [0.16 0.32 0.64 0.96];
-end
+weber_frac = 0.1;
+% weber_frac = 0.075;
+testDisps = 3;
+TEST_CONS = [0.16 0.32 0.64];
+
+% if REF_DISP <= 2
+%     weber_frac = 0.05; % 5 percent change
+%     testDisps = REF_DISP; % [1 5];
+%     TEST_CONS = [0.04 0.08 0.16 0.32];
+% else
+%     weber_frac = 0.075; % 5 percent change
+%     testDisps = REF_DISP;
+%     TEST_CONS = [0.16 0.32 0.64];
+% %     TEST_CONS = [0.16 0.32 0.64 0.96];
+% end
 
 REF_CON = TEST_CONS(end);
 
