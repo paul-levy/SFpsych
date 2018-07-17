@@ -11,5 +11,5 @@ screen resolution (x, y) in pixels: 1280, 960
 screen size (x, y) in cm: 40, 30
 viewing distance in cm: 114
 subject feedback? 0
-start time: 16-Jul-2018 13:43:43
+start time: 16-Jul-2018 13:48:14
 comments: Pilot in VNL psychophysics room (1139) in dark conditions. Georgeson style (one interval). SF spacing based on Weber fraction.
