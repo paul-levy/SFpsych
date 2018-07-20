@@ -1,0 +1,4 @@
+sfPer_s02_p036g.txt
+sfPer_s02_p039g.txt
+sfPer_s02_p040g.txt
+sfPer_s02_p041g.txt

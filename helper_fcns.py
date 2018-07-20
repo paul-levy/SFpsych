@@ -11,15 +11,15 @@ def geo_mean(nparr):
     n = len(nparr);
     return np.power(np.prod(nparr), 1.0/n);
 
-def find_pse_help(true_pmf, params, init_x = 0.5):
+def find_pse_help(true_pmf, params, init_x = 3):
     # 0.5 is PSE; i.e., we believe the test and reference SF are equivalent
     pse_obj = lambda x: np.square(0.5 - true_pmf(params, x));
     pse_opt = opt.minimize(pse_obj, init_x);
     return pse_opt['x'], pse_opt;
 
-def find_pse(true_pmf, params):
+def find_pse(true_pmf, params, sfRange):
     min_pse = []; min_opt = [];
-    for i in np.arange(0, 1, 0.01):
+    for i in np.linspace(sfRange[0], sfRange[-1], 51):
       curr_pse, curr_opt = find_pse_help(true_pmf, params, i);
       if min_pse: # i.e. not empty
         if curr_opt['fun'] < min_opt['fun']:

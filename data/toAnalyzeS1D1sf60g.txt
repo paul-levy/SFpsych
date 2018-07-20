@@ -1,0 +1,8 @@
+sfPer_s01_p054g.txt
+sfPer_s01_p055g.txt
+sfPer_s01_p058g.txt
+sfPer_s01_p059g.txt
+sfPer_s01_p060g.txt
+sfPer_s01_p062g.txt
+sfPer_s01_p065g.txt
+sfPer_s01_p066g.txt

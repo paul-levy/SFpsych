@@ -1,5 +1,5 @@
-sfPer_s02_p020g.txt
-sfPer_s02_p023g.txt
-sfPer_s02_p024g.txt
-sfPer_s02_p025g.txt
-sfPer_s02_p028g.txt
+sfPer_s02_p031g.txt
+sfPer_s02_p032g.txt
+sfPer_s02_p033g.txt
+sfPer_s02_p034g.txt
+sfPer_s02_p042g.txt
