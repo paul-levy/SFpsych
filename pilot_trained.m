@@ -21,7 +21,10 @@ is_pilot = 1;
 run_num = 27;
 save_meta = 1; % save metadata?
 
-NUM_TRIALS = 150;
+NUM_REPS = 5; % how many repetitions per condition?
+% keep in mind: # conditions = #testCons * num_steps*2; e.g. 4 cons * 10
+% steps * 1 dispersion --> 40 conditions, therefore 5 reps --> 200 trials (50 per
+% contrast)
 REF_DISP = 1;
 incMidSamp = 1; % sample more near the reference?
 
@@ -166,12 +169,24 @@ ml = 255*0.5*ones(yPix,xPix);
 texml = mglCreateTexture(ml);
 mglBltTexture(texml,[0 0]); mglFlush;
 
-% determine order:
+% determine order: equal number of trials per condition
 rng('shuffle');
 which_ref = randi(2, NUM_TRIALS, 1);
-test_ind = randi(length(SFtestInds), NUM_TRIALS, 1);
-test_disp = testDisps(randi(length(testDisps), NUM_TRIALS, 1));
-test_con = TEST_CONS(randi(length(TEST_CONS), NUM_TRIALS, 1));
+
+nTotConds = length(SFtestInds) * length(testDisps) * length(TEST_CONS);
+
+allTestInds = repmat(1:length(SFtestInds), [1, NUM_REPS*nTotConds/length(SFtestInds)]); % cycle through SFtestInds (1 ... S 1 .... S ..... S)
+allConInds = repmat(repelem(1:length(TEST_CONS), NUM_REPS*length(SFtestInds)), [1 length(testDisps)]); % match up each contrast to a full cycle of SFtestInds, then repeat for each dispersion (1 ... 1 2 .. 2 C .. C ... 1 .. 1 .. C .. C)
+allDispInds = repelem(1:length(testDisps), NUM_REPS*nTotConds/length(testDisps)); % simply stack dispInds (1 1 1 1 1..... 2 2 2 2 ..... ...... N N N N ....)
+
+indsMatrix = [allTestInds; allConInds; allDispInds];
+permInds = randperm(nTotConds*NUM_REPS);
+
+indsMatrixPerm = indsMatrix(:, permInds);
+
+test_ind = indsMatrixPerm(1, :);
+test_con = indsMatrixPerm(2, :);
+test_disp = indsMatrixPerm(3, :);
 
 if REF_DISP == 1 % Create single sinusoids
     % just fix

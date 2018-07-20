@@ -92,8 +92,7 @@ def opt_pmf(eval_at, n_testResp, n_trials, pmf_model, nFits):
     z = [eval_at[0], eval_at[-1]]; # ugly python
     sfConstr = [tuple(x) for x in np.broadcast_to(z, (nCon, 2))]
     slopeConstr = [tuple(x) for x in np.broadcast_to([0.25, 20], (nCon, 2))];
-    lapseConstr = [tuple(x) for x in np.broadcast_to([0, 0.1], (nCon, 2))];
-    # lapseConstr = (0, 0.2)
+    lapseConstr = [tuple(x) for x in np.broadcast_to([0, 0.5], (nCon, 2))];
     
     boundsAll = np.vstack((sfConstr, slopeConstr, lapseConstr, lapseConstr));
     # boundsAll = np.vstack((sfConstr, slopeConstr, [lapseConstr, lapseConstr]));
